@@ -5,42 +5,50 @@ use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Route;
 use App\Models\Task;
 
-
+// Redirect to all tasks
 Route::get('/', function(){
     return redirect()->route('tasks.index');
 });
 
+// Display creation form
 Route::view('/tasks/create', 'create')->name('tasks.create');
 
+// Get all tasks
 Route::get('/tasks', function () {
     return view('index', ['tasks' => App\Models\Task::latest()->get()]);
 })->name('tasks.index');
 
+// Get specific task via id
 Route::get('/tasks/{id}', function ($id) {
         return view('show', ['task' => App\Models\Task::findOrFail($id)]);
 })->name('tasks.show');
 
+// Get edit form
 Route::get('/tasks/{id}/edit', function ($id) {
     return view('edit', ['task' => App\Models\Task::findOrFail($id)]);
 })->name('tasks.edit');
 
+// Fallback
 Route::fallback(function(){
     return "Still got somewhere";
 });
 
+// Create task
 Route::post('/tasks', function(Request $request){
     $task = createOrUpdate(null, $request);
     return redirect()->route('tasks.show', ['id' => $task->id])
         ->with('success', 'Task was created successfully!');
 })->name('tasks.store');
 
+
+// Update task
 Route::put('/tasks/{id}', function($id, Request $request){
     $task = createOrUpdate($id, $request);
     return redirect()->route('tasks.show', ['id' => $task->id])
         ->with('success', 'Task was updated successfully!');
 })->name('tasks.update');
 
-
+// Update or create task object
 function createOrUpdate ($id, Request $request) {
     $data = $request->validate([
         'title' => 'required|max:255',
